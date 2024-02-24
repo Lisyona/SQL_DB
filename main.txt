@@ -1,0 +1,35 @@
+import sqlalchemy
+import sqlalchemy as sq
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
+from model import create_tables, Publisher, Book, Shop, Stock, Sale, queer_shops
+import ast
+
+DSN = 'postgresql://postgres:Lisyona@localhost:5432/books'
+engine = sqlalchemy.create_engine(DSN)
+Session = sessionmaker(bind = engine)
+session = Session()
+Base = declarative_base()
+
+create_tables(engine)
+
+with open('python ORM data for db.txt', 'r', encoding='utf-8') as file:
+    data = file.read()
+    book_data = ast.literal_eval(data)
+    book_list = []
+
+    for record in book_data:
+        model = {
+        'publisher': Publisher,
+        'shop': Shop,
+        'book': Book,
+        'stock': Stock,
+        'sale': Sale,
+        }[record.get('model')]
+        session.add(model(id=record.get('pk'), **record.get('fields')))
+    session.commit()
+
+publisher_input = input('¬ведите название издательства∆ ').title()
+queer_shops(publisher_input)
+print(queer_shops())
+
+session.close()
